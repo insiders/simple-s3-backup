@@ -35,6 +35,7 @@ if defined?(MYSQL_ALL or MYSQL_DBS)
   if defined?(MYSQL_ALL)
     connection = Sequel.mysql nil, :user => MYSQL_USER, :password => MYSQL_PASS, :host => 'localhost', :encoding => 'utf8'
     @databases = connection['show databases;'].collect { |db| db[:Database] }
+    @databases.delete("performance_schema") # Remove this db from the list, since it makes no sense to back up and causes some errors with --events.
   elsif defined?(MYSQL_DBS)
     @databases = MYSQL_DBS
   end
@@ -49,7 +50,7 @@ if defined?(MYSQL_ALL or MYSQL_DBS)
       password_param = ""
     end
     # Perform the mysqldump and compress the output to file
-    system("#{MYSQLDUMP_CMD} -u #{MYSQL_USER} #{password_param} --single-transaction --add-drop-table --add-locks --create-options --disable-keys --extended-insert --quick #{db} | #{GZIP_CMD} -#{GZIP_STRENGTH} -c > #{full_tmp_path}/#{db_filename}")
+    system("#{MYSQLDUMP_CMD} -u #{MYSQL_USER} #{password_param} --events --single-transaction --add-drop-table --add-locks --create-options --disable-keys --extended-insert --quick #{db} | #{GZIP_CMD} -#{GZIP_STRENGTH} -c > #{full_tmp_path}/#{db_filename}")
     # Upload file to S3
     S3Object.store(db_filename, open("#{full_tmp_path}/#{db_filename}"), S3_BUCKET)
   end
