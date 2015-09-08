@@ -17,6 +17,15 @@ TMP_BACKUP_PATH = '/tmp' # Will be created as parent for a temp directory before
 # use SSL to transmit backups to S3 (a good idea)
 USE_SSL = true
 
+# LIMIT PRIVILEGES
+#  * Limits actions to only write new backups and create new buckets. No attempts are made to
+#    delete data from S3. Set this to true when the credentials you provide don't have the
+#    rights to perform deletions. This is a handy way to prevent disaster should someone
+#    malicious gain access to them. With correctly restricted IAM permissions they won't be
+#    able to delete existing backups. Use a separate server and credentials to purge old backups.
+#    (default is false)
+SKIP_DELETE = false
+
 # CREATE AWS/S3 CONNECTION
 AWS::S3::Base.establish_connection!(
   :access_key_id  => '*** YOUR CREDENTIALS HERE ***',
