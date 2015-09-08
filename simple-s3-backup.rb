@@ -36,6 +36,7 @@ if defined?(MYSQL_ALL or MYSQL_DBS)
     connection = Sequel.mysql nil, :user => MYSQL_USER, :password => MYSQL_PASS, :host => 'localhost', :encoding => 'utf8'
     @databases = connection['show databases;'].collect { |db| db[:Database] }
     @databases.delete("performance_schema") # Remove this db from the list, since it makes no sense to back up and causes some errors with --events.
+    @databases.delete("#mysql50#lost+found") # Skip this db since backup would fail. Not a real db but artifact of putting the MySQL datadir on own volume with ext3/4 fs.
   elsif defined?(MYSQL_DBS)
     @databases = MYSQL_DBS
   end
